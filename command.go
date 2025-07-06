@@ -79,3 +79,13 @@ func handlerRegisters(s *state, cmd command) error {
 
 	return nil
 }
+
+func handlerRestes(s *state, cmd command) error {
+	err := s.db.ResetDb(context.Background())
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Table has been reset successfully")
+	return nil
+}
