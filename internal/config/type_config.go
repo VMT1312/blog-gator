@@ -8,7 +8,7 @@ type Config struct {
 func (c *Config) SetUser(userName string) error {
 	c.CurrentUserName = userName
 
-	err := write(*c)
+	err := Write(*c)
 	if err != nil {
 		return err
 	}
