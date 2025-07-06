@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"os"
 
 	"github.com/VMT1312/blog-gator/internal/config"
 )
@@ -13,16 +13,26 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = cfg.SetUser("Vinh")
+	s := state{cfg_pointer: &cfg}
+
+	cmds := commands{
+		callback: make(map[string]func(*state, command) error),
+	}
+
+	cmds.register("login", handlerLogins)
+
+	args := os.Args
+	if len(args) < 2 {
+		log.Fatal("Did not provide a command name")
+	}
+
+	cmd := command{
+		name: args[1],
+		args: args[2:],
+	}
+
+	err = cmds.run(&s, cmd)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	cfg, err = config.Read()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("database URL: %s\n", cfg.DbUrl)
-	fmt.Printf("current user: %s\n", cfg.CurrentUserName)
 }
