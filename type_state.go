@@ -1,7 +1,11 @@
 package main
 
-import "github.com/VMT1312/blog-gator/internal/config"
+import (
+	"github.com/VMT1312/blog-gator/internal/config"
+	"github.com/VMT1312/blog-gator/internal/database"
+)
 
 type state struct {
-	cfg_pointer *config.Config
+	db  *database.Queries
+	cfg *config.Config
 }

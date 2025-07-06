@@ -7,7 +7,7 @@ type commands struct {
 }
 
 func (c *commands) run(s *state, cmd command) error {
-	if s == nil || s.cfg_pointer == nil {
+	if s == nil || s.cfg == nil {
 		return errors.New("state or configuration not initialized")
 	}
 
