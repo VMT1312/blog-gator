@@ -1,10 +1,16 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"log"
+	"strings"
+	"time"
 
 	"github.com/VMT1312/blog-gator/internal/config"
+	"github.com/VMT1312/blog-gator/internal/database"
+	"github.com/google/uuid"
 )
 
 type command struct {
@@ -17,7 +23,7 @@ func handlerLogins(s *state, cmd command) error {
 		return errors.New("missing username")
 	}
 
-	if s.cfg_pointer == nil {
+	if s.cfg == nil {
 		return errors.New("configuration not initialized")
 	}
 
@@ -25,11 +31,51 @@ func handlerLogins(s *state, cmd command) error {
 		return errors.New("username cannot be empty")
 	}
 
-	s.cfg_pointer.CurrentUserName = cmd.args[0]
+	_, err := s.db.GetUser(context.Background(), cmd.args[0])
+	if err != nil {
+		if strings.Contains(err.Error(), "no rows") {
+			return errors.New("couldn't find user")
+		}
+		return err
+	}
 
-	fmt.Printf("Current user set to: %s\n", s.cfg_pointer.CurrentUserName)
+	s.cfg.CurrentUserName = cmd.args[0]
 
-	config.Write(*s.cfg_pointer)
+	fmt.Printf("Current user set to: %s\n", s.cfg.CurrentUserName)
+
+	config.Write(*s.cfg)
+
+	return nil
+}
+
+func handlerRegisters(s *state, cmd command) error {
+	if len(cmd.args) < 1 {
+		return errors.New("missing username")
+	}
+
+	param := database.CreateUserParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      cmd.args[0],
+	}
+
+	user, err := s.db.CreateUser(context.Background(), param)
+	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key") {
+			return errors.New("user already exists")
+		}
+		return err
+	}
+
+	s.cfg.CurrentUserName = user.Name
+	config.Write(*s.cfg)
+
+	fmt.Printf("%s was added successfully to the database\n", cmd.args[0])
+	log.Printf(" - ID: %v", user.ID)
+	log.Printf(" - Created at: %v", user.CreatedAt)
+	log.Printf(" - Updatead at: %v", user.UpdatedAt)
+	log.Printf(" - Name: %s", user.Name)
 
 	return nil
 }
