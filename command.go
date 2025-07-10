@@ -106,3 +106,18 @@ func handlerGetUsers(s *state, cmd command) error {
 
 	return nil
 }
+
+func handlerFecthFeed(s *state, cmd command) error {
+	// if len(cmd.args) < 1 {
+	// 	return errors.New("missing url to fetch")
+	// }
+
+	feed, err := fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
+	if err != nil {
+		return err
+	}
+
+	fmt.Print(feed)
+
+	return nil
+}
