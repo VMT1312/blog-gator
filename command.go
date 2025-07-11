@@ -108,18 +108,21 @@ func handlerGetUsers(s *state, cmd command) error {
 }
 
 func handlerFecthFeed(s *state, cmd command) error {
-	// if len(cmd.args) < 1 {
-	// 	return errors.New("missing url to fetch")
-	// }
+	if len(cmd.args) < 1 {
+		return errors.New("missing time interval argument")
+	}
 
-	feed, err := fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
+	time_between, err := time.ParseDuration(cmd.args[0])
 	if err != nil {
 		return err
 	}
 
-	fmt.Print(feed)
+	fmt.Printf("Fetching feeds every %s\n", time_between)
 
-	return nil
+	ticker := time.NewTicker(time_between)
+	for ; ; <-ticker.C {
+		scrapeFeeds(s)
+	}
 }
 
 func handlerAddFeed(s *state, cmd command, user database.User) error {
