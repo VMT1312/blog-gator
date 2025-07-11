@@ -80,7 +80,7 @@ func handlerRegisters(s *state, cmd command) error {
 	return nil
 }
 
-func handlerRestes(s *state, cmd command) error {
+func handlerResets(s *state, cmd command) error {
 	err := s.db.ResetDb(context.Background())
 	if err != nil {
 		return err
@@ -118,6 +118,35 @@ func handlerFecthFeed(s *state, cmd command) error {
 	}
 
 	fmt.Print(feed)
+
+	return nil
+}
+
+func handlerAddFeed(s *state, cmd command) error {
+	if len(cmd.args) < 2 {
+		return errors.New("haven't provide both arguments; need name and url of the feed")
+	}
+
+	current_user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	arg := database.CreateFeedParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      cmd.args[0],
+		Url:       cmd.args[1],
+		UserID:    current_user.ID,
+	}
+
+	feed, err := s.db.CreateFeed(context.Background(), arg)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(feed)
 
 	return nil
 }
