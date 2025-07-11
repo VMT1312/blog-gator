@@ -38,6 +38,9 @@ func main() {
 	cmds.register("users", handlerGetUsers)
 	cmds.register("agg", handlerFecthFeed)
 	cmds.register("addfeed", handlerAddFeed)
+	cmds.register("feeds", func(s *state, cmd command) error {
+		return s.feeds()
+	})
 
 	args := os.Args
 	if len(args) < 2 {
