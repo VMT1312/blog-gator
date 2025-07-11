@@ -41,6 +41,8 @@ func main() {
 	cmds.register("feeds", func(s *state, cmd command) error {
 		return s.feeds()
 	})
+	cmds.register("follow", handlerFollow)
+	cmds.register("following", handlerFollowing)
 
 	args := os.Args
 	if len(args) < 2 {

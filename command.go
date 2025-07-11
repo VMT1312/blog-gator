@@ -146,7 +146,64 @@ func handlerAddFeed(s *state, cmd command) error {
 		return err
 	}
 
+	followCmd := command{
+		name: "follow",
+		args: []string{cmd.args[1]},
+	}
+	if err = handlerFollow(s, followCmd); err != nil {
+		return err
+	}
+
 	fmt.Println(feed)
 
+	return nil
+}
+
+func handlerFollow(s *state, cmd command) error {
+	if len(cmd.args) < 1 {
+		return errors.New("missing feed url")
+	}
+
+	current_user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	feed, err := s.db.GetFeedByURL(context.Background(), cmd.args[0])
+	if err != nil {
+		return err
+	}
+
+	arg := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    current_user.ID,
+		FeedID:    feed.ID,
+	}
+
+	feed_follow, err := s.db.CreateFeedFollow(context.Background(), arg)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(feed_follow)
+	return nil
+}
+
+func handlerFollowing(s *state, cmd command) error {
+	current_user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	following_feeds, err := s.db.GetFeedFollowsForUser(context.Background(), current_user.ID)
+	if err != nil {
+		return err
+	}
+
+	for _, feed := range following_feeds {
+		fmt.Println(feed.FeedName)
+	}
 	return nil
 }
