@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -209,6 +210,31 @@ func handlerUnfollow(s *state, cmd command, user database.User) error {
 
 	if err = s.db.Unfollow(context.Background(), arg); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func handlerBrowse(s *state, cmd command) error {
+	var limit int32
+	if len(cmd.args) == 0 {
+		limit = 2
+	} else {
+		val, err := strconv.ParseInt(cmd.args[0], 10, 32)
+		if err != nil {
+			return err
+		}
+
+		limit = int32(val)
+	}
+
+	posts, err := s.db.GetPost(context.Background(), limit)
+	if err != nil {
+		return err
+	}
+
+	for _, post := range posts {
+		fmt.Println(post)
 	}
 
 	return nil

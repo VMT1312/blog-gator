@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
 	"time"
 
 	"github.com/VMT1312/blog-gator/internal/database"
+	"github.com/google/uuid"
 )
 
 func scrapeFeeds(s *state) error {
@@ -29,7 +30,24 @@ func scrapeFeeds(s *state) error {
 	}
 
 	for _, item := range feedData.Channel.Item {
-		fmt.Printf("Title: %s\n", item.Title)
+		post := database.CreatePostParams{
+			ID:        uuid.New(),
+			CreatedAt: feed.CreatedAt,
+			UpdatedAt: feed.UpdatedAt,
+			Title:     item.Title,
+			Url:       feed.Url,
+			Description: sql.NullString{
+				String: item.Description,
+			},
+			PublishedAt: sql.NullString{
+				String: item.PubDate,
+			},
+			FeedID: feed.ID,
+		}
+
+		if err := s.db.CreatePost(context.Background(), post); err != nil {
+			return err
+		}
 	}
 
 	return nil
